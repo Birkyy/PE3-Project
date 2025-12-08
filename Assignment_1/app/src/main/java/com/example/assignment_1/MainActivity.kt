@@ -1,6 +1,5 @@
 package com.example.assignment_1
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,11 +14,29 @@ class MainActivity : AppCompatActivity() {
         installSplashScreen()
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_fragment_container))
-        { v, insets ->
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main_fragment_container)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+        }
+
+        val role = intent.getStringExtra("USER_ROLE")
+
+        if (savedInstanceState == null) {
+            if (role == "Tutor") {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_fragment_container, TutorFragment())
+                    .commit()
+            } else if (role == "Student") {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_fragment_container, StudentFragment())
+                    .commit()
+            } else {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.main_fragment_container, RoleSelectionFragment())
+                    .commit()
+            }
         }
     }
 }
