@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_notification"
+        android:title="Notification"
+        android:icon="@drawable/notification_bell"
+        android:orderInCategory="10"
+        app:showAsAction="ifRoom"
+        />
+
+    <item
+        android:id="@+id/action_contact"
+        android:title="Contact Us"
+        android:orderInCategory="100"
+        app:showAsAction="never"
+        />
+
+    <item
+        android:id="@+id/action_exit"
+        android:title="Exit"
+        android:orderInCategory="300"
+        app:showAsAction="never"
+        />
+</menu>

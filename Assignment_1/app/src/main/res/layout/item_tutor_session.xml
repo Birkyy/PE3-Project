@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/session_course_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Advanced Mathematics"
+            android:textColor="#333333"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            />
+
+        <TextView
+            android:id="@+id/session_student_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="with Student Name"
+            android:textColor="#555555"
+            android:textSize="14sp"
+            android:layout_marginBottom="12dp"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/session_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="14 Nov 2025"
+                android:drawableStart="@drawable/calendar"
+                android:drawablePadding="8dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="#555555"
+                />
+
+            <TextView
+                android:id="@+id/session_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="4:00 PM - 5:00 PM"
+                android:drawableStart="@drawable/time"
+                android:drawablePadding="8dp"
+                android:textColor="#555555"
+                />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btn_contact_student"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Contact Student"
+            android:backgroundTint="@color/primary_color"
+            android:textColor="@android:color/white"/>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
