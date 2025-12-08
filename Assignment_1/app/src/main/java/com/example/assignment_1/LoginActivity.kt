@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.assignment_1.databinding.ActivityLoginBinding
+import android.widget.ImageButton
 
 class LoginActivity : AppCompatActivity() {
 
@@ -19,8 +20,12 @@ class LoginActivity : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
         selectedRole = intent.getStringExtra("SELECTED_ROLE")
-
+        val backButton = findViewById<ImageButton>(R.id.backButton)
         binding.loginButton.text = "$selectedRole Login"
+
+        backButton.setOnClickListener {
+            finish()
+        }
 
         binding.loginButton.setOnClickListener {
             val username = binding.loginUsername.text.toString()

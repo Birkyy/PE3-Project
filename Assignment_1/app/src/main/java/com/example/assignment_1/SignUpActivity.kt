@@ -2,6 +2,7 @@ package com.example.assignment_1
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.assignment_1.databinding.ActivitySignupBinding
@@ -19,14 +20,22 @@ class SignupActivity : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
         selectedRole = intent.getStringExtra("SELECTED_ROLE")
-
+        val backButton = findViewById<ImageButton>(R.id.backButton)
         binding.signupButton.text = "Sign Up as $selectedRole"
+
+        backButton.setOnClickListener {
+            finish()
+        }
 
         binding.signupButton.setOnClickListener {
             val username = binding.signupUsername.text.toString()
-            val password = binding.signupPassward.text.toString()
+            val password = binding.signupPassword.text.toString()
+            val confirmPassword = binding.signupConfirmPassword.text.toString()
 
-            if (username.isNotEmpty() && password.isNotEmpty() && selectedRole != null) {
+            if(password != confirmPassword){
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            }
+            else if (username.isNotEmpty() && password.isNotEmpty() && selectedRole != null) {
                 val result = databaseHelper.insertUser(username, password, selectedRole!!)
                 if (result != -1L) {
                     Toast.makeText(this, "Signup Successful", Toast.LENGTH_SHORT).show()
