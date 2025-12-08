@@ -32,8 +32,8 @@ class SignupActivity : AppCompatActivity() {
             val password = binding.signupPassword.text.toString()
             val confirmPassword = binding.signupConfirmPassword.text.toString()
 
-            if(password != confirmPassword){
-                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            if(databaseHelper.checkUsernameExists(username)){
+                Toast.makeText(this, "User already exists! Please choose another username.", Toast.LENGTH_SHORT).show()
             }
             else if (username.isNotEmpty() && password.isNotEmpty() && selectedRole != null) {
                 val result = databaseHelper.insertUser(username, password, selectedRole!!)
@@ -46,7 +46,11 @@ class SignupActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this, "Signup Failed", Toast.LENGTH_SHORT).show()
                 }
-            } else {
+            }
+            else if(password != confirmPassword){
+                Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
+            }
+            else {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
             }
         }

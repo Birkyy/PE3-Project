@@ -53,4 +53,15 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         cursor.close()
         return role
     }
+
+    fun checkUsernameExists(username: String): Boolean {
+        val db = readableDatabase
+        val cursor = db.query(TABLE_USERS, arrayOf(COLUMN_USERNAME),
+            "$COLUMN_USERNAME = ?",
+            arrayOf(username), null, null, null)
+
+        val exists = cursor.count > 0 // true if we found a user, false if not
+        cursor.close()
+        return exists
+    }
 }
