@@ -22,7 +22,13 @@ class CourseAdapter(private val courses: List<Course>) :
 
     override fun onBindViewHolder(holder: CourseViewHolder, position: Int) {
         val course = courses[position]
-        holder.courseImage.setImageResource(course.imageUrl)
+
+        if (course.imageBitmap != null) {
+            holder.courseImage.setImageBitmap(course.imageBitmap)
+        } else {
+            holder.courseImage.setImageResource(R.drawable.placeholder_img)
+        }
+
         holder.courseTitle.text = course.title
         holder.courseAuthors.text = course.authors
 

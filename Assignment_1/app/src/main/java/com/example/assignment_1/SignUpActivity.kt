@@ -28,6 +28,7 @@ class SignupActivity : AppCompatActivity() {
         }
 
         binding.signupButton.setOnClickListener {
+            val fullname = binding.signupName.text.toString()
             val username = binding.signupUsername.text.toString()
             val password = binding.signupPassword.text.toString()
             val confirmPassword = binding.signupConfirmPassword.text.toString()
@@ -35,8 +36,8 @@ class SignupActivity : AppCompatActivity() {
             if(databaseHelper.checkUsernameExists(username)){
                 Toast.makeText(this, "User already exists! Please choose another username.", Toast.LENGTH_SHORT).show()
             }
-            else if (username.isNotEmpty() && password.isNotEmpty() && selectedRole != null) {
-                val result = databaseHelper.insertUser(username, password, selectedRole!!)
+            else if (fullname.isNotEmpty() && username.isNotEmpty() && password.isNotEmpty() && selectedRole != null) {
+                val result = databaseHelper.insertUser(fullname, username, password, selectedRole!!)
                 if (result != -1L) {
                     Toast.makeText(this, "Signup Successful", Toast.LENGTH_SHORT).show()
                     val intent = Intent(this, LoginActivity::class.java)

@@ -102,13 +102,10 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
     }
 
     private fun loadCourses() {
-        // FETCH FROM DATABASE
         val courseList = dbHelper.getAllCourses()
 
-        // SETUP ADAPTER
         val adapter = CourseAdapter(courseList)
 
-        // HANDLE EDIT CLICK
         adapter.onItemClick = { course ->
             val intent = Intent(requireContext(), AddCourseActivity::class.java)
             intent.putExtra("COURSE_ID", course.id)

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,22 +22,22 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
-        val role = intent.getStringExtra("USER_ROLE")
-
         if (savedInstanceState == null) {
-            if (role == "Tutor") {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_fragment_container, TutorFragment())
-                    .commit()
-            } else if (role == "Student") {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_fragment_container, StudentFragment())
-                    .commit()
+            val selectedRole = intent.getStringExtra("SELECTED_ROLE")
+
+            if (selectedRole == "Tutor") {
+                loadFragment(TutorFragment())
+            } else if (selectedRole == "Student") {
+                loadFragment(StudentFragment())
             } else {
-                supportFragmentManager.beginTransaction()
-                    .replace(R.id.main_fragment_container, RoleSelectionFragment())
-                    .commit()
+                loadFragment(RoleSelectionFragment())
             }
         }
+    }
+
+    private fun loadFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.main_fragment_container, fragment)
+            .commit()
     }
 }

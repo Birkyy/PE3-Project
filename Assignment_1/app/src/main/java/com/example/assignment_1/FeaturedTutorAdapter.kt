@@ -14,15 +14,17 @@ class FeaturedTutorAdapter(private val tutors: List<Tutor>) :
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_featured_tutor, parent, false)
         return TutorViewHolder(view)
-
     }
 
     override fun onBindViewHolder(holder: TutorViewHolder, position: Int) {
         val tutor = tutors[position]
         holder.tutorName.text = tutor.name
-        holder.tutorSubject.text = tutor.subject
-        holder.tutorImage.setImageResource(tutor.imageUrl)
 
+        if (tutor.image != null) {
+            holder.tutorImage.setImageBitmap(tutor.image)
+        } else {
+            holder.tutorImage.setImageResource(R.drawable.placeholder_img)
+        }
     }
 
     override fun getItemCount(): Int = tutors.size
@@ -30,6 +32,5 @@ class FeaturedTutorAdapter(private val tutors: List<Tutor>) :
     class TutorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val tutorImage: ImageView = itemView.findViewById(R.id.tutorImage)
         val tutorName: TextView = itemView.findViewById(R.id.tutorName)
-        val tutorSubject: TextView = itemView.findViewById(R.id.tutorSubject)
     }
 }

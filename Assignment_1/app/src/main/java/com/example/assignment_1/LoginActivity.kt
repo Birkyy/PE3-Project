@@ -10,36 +10,36 @@ import android.widget.ImageButton
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-    private lateinit var databaseHelper: DatabaseHelper
-    private var selectedRole: String? = null
+    private lateinit var dbHelper: DatabaseHelper
+    private var intendedRole: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        databaseHelper = DatabaseHelper(this)
-        selectedRole = intent.getStringExtra("SELECTED_ROLE")
+        dbHelper = DatabaseHelper(this)
         val backButton = findViewById<ImageButton>(R.id.backButton)
-        binding.loginButton.text = "$selectedRole Login"
 
         backButton.setOnClickListener {
             finish()
         }
+
+        intendedRole = intent.getStringExtra("SELECTED_ROLE")
 
         binding.loginButton.setOnClickListener {
             val username = binding.loginUsername.text.toString()
             val password = binding.loginPassword.text.toString()
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
-                val dbRole = databaseHelper.checkUser(username, password)
+                val realRole = dbHelper.checkUser(username, password)
 
-                if (dbRole != null) {
-                    if (dbRole == selectedRole) {
+                if (realRole != null) {
+                    if (realRole == intendedRole) {
                         Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
-                        goToMain(dbRole)
+                        goToMain(realRole)
                     } else {
-                        Toast.makeText(this, "Please log in as a $dbRole", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Please log in as a $realRole", Toast.LENGTH_LONG).show()
                     }
                 } else {
                     Toast.makeText(this, "Invalid Credentials", Toast.LENGTH_SHORT).show()
@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
 
         binding.signupRedirect.setOnClickListener {
             val intent = Intent(this, SignupActivity::class.java)
-            intent.putExtra("SELECTED_ROLE", selectedRole)
+            intent.putExtra("SELECTED_ROLE", intendedRole)
             startActivity(intent)
             finish()
         }
@@ -59,7 +59,7 @@ class LoginActivity : AppCompatActivity() {
 
     private fun goToMain(role: String) {
         val intent = Intent(this, MainActivity::class.java)
-        intent.putExtra("USER_ROLE", role)
+        intent.putExtra("SELECTED_ROLE", role)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()

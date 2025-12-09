@@ -7,7 +7,7 @@
     android:background="#F8F3FC">
 
     <TextView
-        android:id="@+id/tv_header"
+        android:id="@+id/header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Create New Course"
@@ -16,7 +16,7 @@
         android:layout_marginBottom="24dp"/>
 
     <EditText
-        android:id="@+id/et_title"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Course Title (e.g., Advanced Math)"
@@ -24,7 +24,7 @@
         android:layout_marginBottom="16dp"/>
 
     <EditText
-        android:id="@+id/et_desc"
+        android:id="@+id/desc"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Description"
@@ -32,7 +32,7 @@
         android:layout_marginBottom="16dp"/>
 
     <EditText
-        android:id="@+id/et_price"
+        android:id="@+id/price"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Price per Hour (RM)"
@@ -41,7 +41,7 @@
         android:layout_marginBottom="24dp"/>
 
     <Button
-        android:id="@+id/btn_save"
+        android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Save Course"
@@ -49,7 +49,7 @@
     </Button>
 
     <Button
-        android:id="@+id/btn_delete"
+        android:id="@+id/deleteButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Delete Course"

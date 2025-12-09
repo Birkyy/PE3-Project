@@ -14,6 +14,7 @@ class StudentHomeFragment : Fragment() {
 
     private lateinit var featuredTutorsRecyclerView: RecyclerView
     private lateinit var coursesRecyclerView: RecyclerView
+    private lateinit var dbHelper: DatabaseHelper
 
 
     override fun onCreateView(
@@ -21,56 +22,33 @@ class StudentHomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_student_home, container, false)
-
+        dbHelper = DatabaseHelper(requireContext())
         featuredTutorsRecyclerView = view.findViewById(R.id.recyclerViewFeaturedTutors)
         coursesRecyclerView = view.findViewById(R.id.recyclerViewCourses)
 
         setupFeaturedTutorsRecyclerView()
-        setupCoursesRecyclerView()
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+        setupCoursesRecyclerView()
+    }
+
     private fun setupFeaturedTutorsRecyclerView() {
-        val tutors = listOf(
-            Tutor("t1", "Mr. Caleb", "Piano", R.mipmap.tutor_placeholder_round),
-            Tutor("t2", "Mr. Jaden", "Mathematic", R.mipmap.tutor_placeholder_1_round),
-            Tutor("t3", "Mr. Jordan", "English", R.mipmap.tutor_placeholder_2_round),
-            Tutor("t4", "Mr. Wong", "Physics", R.mipmap.tutor_placeholder_3_round)
-        )
+        val tutors = dbHelper.getAllTutors()
 
         val adapter = FeaturedTutorAdapter(tutors)
         featuredTutorsRecyclerView.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         featuredTutorsRecyclerView.adapter = adapter
 
+        if (tutors.isEmpty()) {
+
+        }
     }
 
     private fun setupCoursesRecyclerView() {
-        val courses = listOf(
-            Course(
-                "c1",
-                "Advanced Mathematics",
-                "Ms. Sarah Chen",
-                "hi",
-                25.00,
-                R.mipmap.math_course_foreground
-            ),
-            Course(
-                "c2",
-                "Physics Fundamentals",
-                "Mr. Ahmad Ibrahim",
-                "hi",
-                30.00,
-                R.mipmap.physic_course_foreground
-            ),
-            Course(
-                "c3",
-                "English Language & Literature",
-                "Ms. Emily Watson",
-                "hi",
-                20.00,
-                R.mipmap.english_course_foreground
-            ),
-        )
+        val courses = dbHelper.getAllCourses()
 
         val adapter = CourseAdapter(courses)
         coursesRecyclerView.layoutManager = LinearLayoutManager(context)
