@@ -14,13 +14,16 @@ import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class TutorFragment : Fragment(R.layout.fragment_tutor) {
 
     private lateinit var tutorSessionsRecyclerView: RecyclerView
+    private lateinit var dbHelper: DatabaseHelper
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        dbHelper = DatabaseHelper(requireContext())
 
         val toolbar: androidx.appcompat.widget.Toolbar = view.findViewById(R.id.toolbar)
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
@@ -33,6 +36,12 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
 
         tutorSessionsRecyclerView = view.findViewById(R.id.tutorSessionsRecyclerView)
         setupTutorSessionsRecyclerView()
+
+        val add = view.findViewById<FloatingActionButton>(R.id.addButton)
+        add.setOnClickListener {
+            val intent = Intent(requireContext(), AddCourseActivity::class.java)
+            startActivity(intent)
+        }
 
         val menuHost: MenuHost = requireActivity()
         menuHost.addMenuProvider(object : MenuProvider {
@@ -83,6 +92,32 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
             Session("s4", "Mr. Caleb", "Advanced Mathematics", "10 Nov 2025", "3:00 PM", "Completed", "Alex Wong")
         )
         val adapter = SessionAdapter(sessions, UserType.TUTOR)
+        tutorSessionsRecyclerView.layoutManager = LinearLayoutManager(context)
+        tutorSessionsRecyclerView.adapter = adapter
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadCourses()
+    }
+
+    private fun loadCourses() {
+        // FETCH FROM DATABASE
+        val courseList = dbHelper.getAllCourses()
+
+        // SETUP ADAPTER
+        val adapter = CourseAdapter(courseList)
+
+        // HANDLE EDIT CLICK
+        adapter.onItemClick = { course ->
+            val intent = Intent(requireContext(), AddCourseActivity::class.java)
+            intent.putExtra("COURSE_ID", course.id)
+            intent.putExtra("COURSE_TITLE", course.title)
+            intent.putExtra("COURSE_DESC", course.description)
+            intent.putExtra("COURSE_PRICE", course.price)
+            startActivity(intent)
+        }
+
         tutorSessionsRecyclerView.layoutManager = LinearLayoutManager(context)
         tutorSessionsRecyclerView.adapter = adapter
     }

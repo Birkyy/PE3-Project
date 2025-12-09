@@ -121,4 +121,17 @@
             />
 
     </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:src="@drawable/add"
+        android:backgroundTint="#4b886a"
+        app:tint="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+    </com.google.android.material.floatingactionbutton.FloatingActionButton>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
