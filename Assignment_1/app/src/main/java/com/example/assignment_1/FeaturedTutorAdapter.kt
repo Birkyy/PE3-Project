@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 class FeaturedTutorAdapter(private val tutors: List<Tutor>) :
     RecyclerView.Adapter<FeaturedTutorAdapter.TutorViewHolder>() {
 
+    var onItemClick: ((Tutor) -> Unit)? = null
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TutorViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_featured_tutor, parent, false)
@@ -24,6 +26,10 @@ class FeaturedTutorAdapter(private val tutors: List<Tutor>) :
             holder.tutorImage.setImageBitmap(tutor.image)
         } else {
             holder.tutorImage.setImageResource(R.drawable.placeholder_img)
+        }
+
+        holder.itemView.setOnClickListener {
+            onItemClick?.invoke(tutor)
         }
     }
 

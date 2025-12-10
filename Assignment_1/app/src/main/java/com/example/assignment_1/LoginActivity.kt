@@ -38,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
                 if (realRole != null) {
                     if (realRole == intendedRole) {
                         Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
-                        goToMain(realRole, fullName)
+                        goToMain(realRole, fullName, username)
                     } else {
                         Toast.makeText(this, "Please log in as a $realRole", Toast.LENGTH_LONG).show()
                     }
@@ -58,10 +58,11 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun goToMain(role: String, name:String) {
+    private fun goToMain(role: String, name:String, username: String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("SELECTED_ROLE", role)
         intent.putExtra("USER_FULLNAME", name)
+        intent.putExtra("USER_USERNAME", username)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()

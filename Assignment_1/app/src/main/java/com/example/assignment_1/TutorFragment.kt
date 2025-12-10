@@ -76,6 +76,15 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
                         return true
                     }
 
+                    R.id.action_profile -> {
+                        val username = requireActivity().intent.getStringExtra("USER_USERNAME") ?: ""
+
+                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                        intent.putExtra("USER_USERNAME", username)
+                        startActivity(intent)
+                        return true
+                    }
+
                     R.id.action_contact -> {
                         val intent = Intent(requireContext(), ContactActivity::class.java)
                         startActivity(intent)
@@ -91,6 +100,15 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
                 return false
             }
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+
+        val seeAllButton = view.findViewById<TextView>(R.id.see_all_sessions)
+
+        seeAllButton.setOnClickListener {
+            val currentAuthor = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown Tutor"
+            val intent = Intent(requireContext(), AllSessionsActivity::class.java)
+            intent.putExtra("TUTOR_NAME", currentAuthor)
+            startActivity(intent)
+        }
     }
 
     private fun setupTutorSessionsRecyclerView() {
@@ -141,6 +159,7 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
     override fun onResume() {
         super.onResume()
         loadMyCourses()
+        updateEarnings()
     }
 
     private fun loadMyCourses() {
@@ -168,5 +187,13 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
             tutorCoursesRecyclerView.layoutManager = LinearLayoutManager(context)
             tutorCoursesRecyclerView.adapter = adapter
         }
+    }
+
+    private fun updateEarnings() {
+        val currentAuthor = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown Tutor"
+        val totalEarnings = dbHelper.calculateTutorEarnings(currentAuthor)
+        val earnings = view?.findViewById<TextView>(R.id.tutor_earnings)
+
+        earnings?.text = String.format("RM %.2f", totalEarnings)
     }
 }

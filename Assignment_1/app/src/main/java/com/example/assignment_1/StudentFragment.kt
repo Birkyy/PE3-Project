@@ -71,6 +71,15 @@ class StudentFragment : Fragment(R.layout.fragment_student) {
                         return true
                     }
 
+                    R.id.action_profile -> {
+                        val username = requireActivity().intent.getStringExtra("USER_USERNAME") ?: ""
+
+                        val intent = Intent(requireContext(), ProfileActivity::class.java)
+                        intent.putExtra("USER_USERNAME", username)
+                        startActivity(intent)
+                        return true
+                    }
+
                     R.id.action_contact -> {
                         val intent = Intent(requireContext(), ContactActivity::class.java)
                         startActivity(intent)

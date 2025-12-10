@@ -4,18 +4,23 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
         private const val DATABASE_NAME = "ProjectDatabase.db"
-        private const val DATABASE_VERSION = 11
+        private const val DATABASE_VERSION = 12
         const val TABLE_USERS = "users"
         const val COLUMN_USER_ID = "id"
         const val COLUMN_USERNAME = "username"
         const val COLUMN_PASSWORD = "password"
         const val COLUMN_ROLE = "role"
         const val COLUMN_FULLNAME = "fullname"
+        const val COLUMN_USER_IMAGE = "profile_image"
+
         const val TABLE_COURSES = "courses"
         const val COLUMN_COURSE_ID = "course_id"
         const val COLUMN_COURSE_TITLE = "title"
@@ -40,7 +45,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
                 "$COLUMN_FULLNAME TEXT, " +
                 "$COLUMN_USERNAME TEXT, " +
                 "$COLUMN_PASSWORD TEXT, " +
-                "$COLUMN_ROLE TEXT)")
+                "$COLUMN_ROLE TEXT, " +
+                "$COLUMN_USER_IMAGE BLOB)")
         db?.execSQL(createUsersTable)
 
         val createCoursesTable = ("CREATE TABLE $TABLE_COURSES (" +
@@ -77,6 +83,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
             put(COLUMN_USERNAME, username)
             put(COLUMN_PASSWORD, password)
             put(COLUMN_ROLE, role)
+            putNull(COLUMN_USER_IMAGE)
         }
         return db.insert(TABLE_USERS, null, values)
     }
@@ -219,29 +226,86 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         return fullName
     }
 
+    fun getUserDetails(username: String): Triple<String, String, android.graphics.Bitmap?>? {
+        val db = readableDatabase
+        val cursor = db.query(TABLE_USERS, arrayOf(COLUMN_FULLNAME, COLUMN_PASSWORD, COLUMN_USER_IMAGE),
+            "$COLUMN_USERNAME = ?", arrayOf(username), null, null, null)
+
+        var details: Triple<String, String, android.graphics.Bitmap?>? = null
+
+        if (cursor.moveToFirst()) {
+            val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FULLNAME))
+            val pass = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD))
+
+            var bitmap: android.graphics.Bitmap? = null
+            val imgIndex = cursor.getColumnIndex(COLUMN_USER_IMAGE)
+            if (imgIndex != -1 && !cursor.isNull(imgIndex)) {
+                val bytes = cursor.getBlob(imgIndex)
+                bitmap = ImageUtil.getBitmapFromBytes(bytes)
+            }
+
+            details = Triple(name, pass, bitmap)
+        }
+        cursor.close()
+        return details
+    }
+
+    fun updateUserProfile(username: String, newName: String, newPass: String, imageBytes: ByteArray?): Boolean {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put(COLUMN_FULLNAME, newName)
+            put(COLUMN_PASSWORD, newPass)
+            if (imageBytes != null) {
+                put(COLUMN_USER_IMAGE, imageBytes)
+            }
+        }
+        val rows = db.update(TABLE_USERS, values, "$COLUMN_USERNAME = ?", arrayOf(username))
+        return rows > 0
+    }
+
     fun getAllTutors(): List<Tutor> {
         val tutorList = mutableListOf<Tutor>()
         val db = readableDatabase
-
         val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS WHERE $COLUMN_ROLE = ?", arrayOf("Tutor"))
-
-        val idIndex = cursor.getColumnIndex(COLUMN_USER_ID)
-        val nameIndex = cursor.getColumnIndex(COLUMN_FULLNAME)
-
-        val defaultBitmap = ImageUtil.drawableToBitmap(context, R.drawable.placeholder_img)
 
         if (cursor.moveToFirst()) {
             do {
-                if (idIndex != -1 && nameIndex != -1) {
-                    val id = cursor.getInt(idIndex).toString()
-                    val name = cursor.getString(nameIndex)
-                    tutorList.add(Tutor(id, name, defaultBitmap))
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)).toString()
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FULLNAME))
+                val imageIndex = cursor.getColumnIndex(COLUMN_USER_IMAGE)
+                var profileBitmap: android.graphics.Bitmap? = null
+
+                if (imageIndex != -1 && !cursor.isNull(imageIndex)) {
+                    val imageBytes = cursor.getBlob(imageIndex)
+                    profileBitmap = ImageUtil.getBitmapFromBytes(imageBytes)
                 }
+
+                if (profileBitmap == null) {
+                    profileBitmap = ImageUtil.drawableToBitmap(context, R.drawable.placeholder_img)
+                }
+
+                tutorList.add(Tutor(id, name, profileBitmap))
             } while (cursor.moveToNext())
         }
-
         cursor.close()
         return tutorList
+    }
+
+    fun getTutorImage(tutorName: String): android.graphics.Bitmap? {
+        val db = readableDatabase
+        val cursor = db.query(TABLE_USERS, arrayOf(COLUMN_USER_IMAGE),
+            "$COLUMN_FULLNAME = ?", arrayOf(tutorName), null, null, null)
+
+        var bitmap: android.graphics.Bitmap? = null
+        if (cursor.moveToFirst()) {
+            val index = cursor.getColumnIndex(COLUMN_USER_IMAGE)
+            if (index != -1 && !cursor.isNull(index)) {
+                val bytes = cursor.getBlob(index)
+                bitmap = ImageUtil.getBitmapFromBytes(bytes)
+            }
+        }
+        cursor.close()
+        return bitmap
     }
 
     fun bookSession(tutorName: String, studentName: String, subject: String, date: String, time: String, duration: Int): Long {
@@ -275,15 +339,38 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         var totalEarnings = 0.0
         val db = readableDatabase
 
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_SESSIONS WHERE $COLUMN_SESSION_TUTOR = ?", arrayOf(tutorName))
+        // 1. Select ONLY 'Confirmed' sessions for this tutor
+        val cursor = db.rawQuery(
+            "SELECT * FROM $TABLE_SESSIONS WHERE $COLUMN_SESSION_TUTOR = ? AND $COLUMN_SESSION_STATUS = 'Confirmed'",
+            arrayOf(tutorName)
+        )
+
+        val formatter = SimpleDateFormat("d/M/yyyy h:mm a", Locale.getDefault())
+        val now = Date()
 
         if (cursor.moveToFirst()) {
             do {
-                val subject = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SESSION_SUBJECT))
-                val duration = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SESSION_DURATION))
-                val price = getCoursePrice(subject)
+                try {
+                    val subject = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SESSION_SUBJECT))
+                    val dateStr = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SESSION_DATE))
+                    val timeRange = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SESSION_TIME))
+                    val duration = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SESSION_DURATION))
 
-                totalEarnings += (price * duration)
+                    val parts = timeRange.split("-")
+                    if (parts.size == 2) {
+                        val endTimeStr = parts[1].trim()
+
+                        val fullDateTimeStr = "$dateStr $endTimeStr"
+                        val sessionEndDate = formatter.parse(fullDateTimeStr)
+
+                        if (sessionEndDate != null && sessionEndDate.before(now)) {
+                            val price = getCoursePrice(subject)
+                            totalEarnings += (price * duration)
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
 
             } while (cursor.moveToNext())
         }
@@ -356,5 +443,36 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         }
         val rowsAffected = db.update(TABLE_SESSIONS, values, "$COLUMN_SESSION_ID = ?", arrayOf(sessionId))
         return rowsAffected > 0
+    }
+
+    fun getNextUpcomingSession(studentName: String): Session? {
+        val sessions = getStudentSessions(studentName, isUpcoming = true)
+
+        if (sessions.isEmpty()) return null
+
+        val formatter = SimpleDateFormat("d/M/yyyy h:mm a", Locale.getDefault())
+        val now = Date()
+
+        return sessions
+            .filter { session ->
+                try {
+                    val startTime = session.time.split("-")[0].trim()
+                    val fullDateTimeString = "${session.date} $startTime"
+
+                    val sessionDate = formatter.parse(fullDateTimeString)
+                    sessionDate != null && sessionDate.after(now)
+                } catch (e: Exception) {
+                    false
+                }
+            }
+            .minByOrNull { session ->
+                try {
+                    val startTime = session.time.split("-")[0].trim()
+                    val fullDateTimeString = "${session.date} $startTime"
+                    formatter.parse(fullDateTimeString)?.time ?: Long.MAX_VALUE
+                } catch (e: Exception) {
+                    Long.MAX_VALUE
+                }
+            }
     }
 }
