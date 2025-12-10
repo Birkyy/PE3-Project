@@ -7,6 +7,7 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
@@ -19,6 +20,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class TutorFragment : Fragment(R.layout.fragment_tutor) {
 
     private lateinit var tutorSessionsRecyclerView: RecyclerView
+    private lateinit var tutorCoursesRecyclerView: RecyclerView
+    private lateinit var noSessions: TextView
+    private lateinit var noCourses: TextView
     private lateinit var dbHelper: DatabaseHelper
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -29,17 +33,22 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
         (requireActivity() as AppCompatActivity).setSupportActionBar(toolbar)
 
         val actionBar = (requireActivity() as AppCompatActivity).supportActionBar
-
         actionBar?.setDisplayShowTitleEnabled(false)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.setHomeAsUpIndicator(R.drawable.back_arrow)
 
         tutorSessionsRecyclerView = view.findViewById(R.id.tutorSessionsRecyclerView)
+        tutorCoursesRecyclerView = view.findViewById(R.id.tutorCoursesRecyclerView)
+        noSessions = view.findViewById(R.id.no_sessions)
+        noCourses = view.findViewById(R.id.no_courses)
+
         setupTutorSessionsRecyclerView()
 
         val add = view.findViewById<FloatingActionButton>(R.id.addButton)
         add.setOnClickListener {
+            val currentAuthorName = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown Tutor"
             val intent = Intent(requireContext(), AddCourseActivity::class.java)
+            intent.putExtra("AUTHOR_NAME_PASSED", currentAuthorName)
             startActivity(intent)
         }
 
@@ -85,37 +94,79 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
     }
 
     private fun setupTutorSessionsRecyclerView() {
-        val sessions = listOf(
-            Session("s1", "Mr. Caleb", "Advanced Mathematics", "14 Nov 2025", "4:00 PM", "Confirmed", "Wong Rui Bin"),
-            Session("s2", "Mr. Caleb", "Advanced Mathematics", "15 Nov 2025", "10:00 AM", "Pending", "Jaden Smith"),
-            Session("s3", "Mr. Caleb", "Advanced Mathematics", "16 Nov 2025", "2:00 PM", "Cancelled", "Jordan Lee"),
-            Session("s4", "Mr. Caleb", "Advanced Mathematics", "10 Nov 2025", "3:00 PM", "Completed", "Alex Wong")
-        )
-        val adapter = SessionAdapter(sessions, UserType.TUTOR)
-        tutorSessionsRecyclerView.layoutManager = LinearLayoutManager(context)
-        tutorSessionsRecyclerView.adapter = adapter
+        val currentTutor = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown"
+
+        val sessions = dbHelper.getTutorSessions(currentTutor, isUpcoming = true)
+
+        if (sessions.isEmpty()) {
+            tutorSessionsRecyclerView.visibility = View.GONE
+            noSessions.visibility = View.VISIBLE
+        } else {
+            tutorSessionsRecyclerView.visibility = View.VISIBLE
+            noSessions.visibility = View.GONE
+
+            val adapter = SessionAdapter(sessions, UserType.TUTOR)
+
+            adapter.onItemClick = { session ->
+                showSessionActionDialog(session)
+            }
+
+            tutorSessionsRecyclerView.layoutManager = LinearLayoutManager(context)
+            tutorSessionsRecyclerView.adapter = adapter
+        }
+    }
+
+    private fun showSessionActionDialog(session: Session) {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Manage Session")
+        builder.setMessage("Student: ${session.studentName}\nCourse: ${session.subject}\nDate: ${session.date}")
+
+        builder.setPositiveButton("Confirm") { dialog, _ ->
+            dbHelper.updateSessionStatus(session.id, "Confirmed")
+            Toast.makeText(context, "Session Confirmed!", Toast.LENGTH_SHORT).show()
+            setupTutorSessionsRecyclerView() // Refresh list
+        }
+
+        builder.setNegativeButton("Reject") { dialog, _ ->
+            dbHelper.updateSessionStatus(session.id, "Cancelled")
+            Toast.makeText(context, "Session Rejected.", Toast.LENGTH_SHORT).show()
+            setupTutorSessionsRecyclerView() // Refresh list
+        }
+
+        builder.setNeutralButton("Back", null)
+
+        builder.show()
     }
 
     override fun onResume() {
         super.onResume()
-        loadCourses()
+        loadMyCourses()
     }
 
-    private fun loadCourses() {
-        val courseList = dbHelper.getAllCourses()
+    private fun loadMyCourses() {
 
-        val adapter = CourseAdapter(courseList)
+        val currentAuthor = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown Tutor"
 
-        adapter.onItemClick = { course ->
-            val intent = Intent(requireContext(), AddCourseActivity::class.java)
-            intent.putExtra("COURSE_ID", course.id)
-            intent.putExtra("COURSE_TITLE", course.title)
-            intent.putExtra("COURSE_DESC", course.description)
-            intent.putExtra("COURSE_PRICE", course.price)
-            startActivity(intent)
+        val myCourses = dbHelper.getCoursesByAuthor(currentAuthor)
+
+        if (myCourses.isEmpty()) {
+            tutorCoursesRecyclerView.visibility = View.GONE
+            noCourses.visibility = View.VISIBLE
+        } else {
+            tutorCoursesRecyclerView.visibility = View.VISIBLE
+            noCourses.visibility = View.GONE
+
+            val adapter = CourseAdapter(myCourses)
+
+            adapter.onItemClick = { course ->
+                val intent = Intent(requireContext(), AddCourseActivity::class.java)
+                intent.putExtra("COURSE_ID", course.id)
+                intent.putExtra("AUTHOR_NAME_PASSED", currentAuthor)
+                startActivity(intent)
+            }
+
+            tutorCoursesRecyclerView.layoutManager = LinearLayoutManager(context)
+            tutorCoursesRecyclerView.adapter = adapter
         }
-
-        tutorSessionsRecyclerView.layoutManager = LinearLayoutManager(context)
-        tutorSessionsRecyclerView.adapter = adapter
     }
 }

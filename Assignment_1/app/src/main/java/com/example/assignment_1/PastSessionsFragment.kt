@@ -1,33 +1,52 @@
 package com.example.assignment_1
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class PastSessionsFragment : Fragment() {
+class PastSessionsFragment : Fragment(R.layout.fragment_session_list) {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_session_list, container, false)
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var empty: TextView
+    private lateinit var dbHelper: DatabaseHelper
 
-        val recyclerView: RecyclerView = view.findViewById(R.id.sessionsRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        dbHelper = DatabaseHelper(requireContext())
+        recyclerView = view.findViewById(R.id.sessionsRecyclerView)
+        empty = view.findViewById(R.id.emptySessions)
+    }
 
-        val pastSessions = listOf(
-            Session("p1", "Dr. Emily", "Chemistry (Organic)", "01 October 2025", "1:00 PM", "Completed", ""),
-            Session("p2", "Mr. David", "History (World War II)", "20 September 2025", "3:00 PM", "Completed", ""),
-            Session("p3", "Ms. Grace", "Biology (Genetics)", "05 August 2025", "11:00 AM", "Cancelled", "")
-        )
+    override fun onResume() {
+        super.onResume()
+        loadSessions()
+    }
 
-        val adapter = SessionAdapter(pastSessions, UserType.STUDENT)
-        recyclerView.adapter = adapter
+    private fun loadSessions() {
+        val userName = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown"
+        val role = requireActivity().intent.getStringExtra("SELECTED_ROLE") ?: "Student"
 
-        return view
+        val sessions = if (role == "Tutor") {
+            dbHelper.getTutorSessions(userName, isUpcoming = false)
+        } else {
+            dbHelper.getStudentSessions(userName, isUpcoming = false)
+        }
+
+        if (sessions.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            empty.visibility = View.VISIBLE
+            empty.text = "No past sessions."
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            empty.visibility = View.GONE
+
+            val userType = if (role == "Tutor") UserType.TUTOR else UserType.STUDENT
+            val adapter = SessionAdapter(sessions, userType)
+            recyclerView.layoutManager = LinearLayoutManager(context)
+            recyclerView.adapter = adapter
+        }
     }
 }

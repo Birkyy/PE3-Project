@@ -30,6 +30,7 @@ class LoginActivity : AppCompatActivity() {
         binding.loginButton.setOnClickListener {
             val username = binding.loginUsername.text.toString()
             val password = binding.loginPassword.text.toString()
+            val fullName = dbHelper.getUserFullName(username)
 
             if (username.isNotEmpty() && password.isNotEmpty()) {
                 val realRole = dbHelper.checkUser(username, password)
@@ -37,7 +38,7 @@ class LoginActivity : AppCompatActivity() {
                 if (realRole != null) {
                     if (realRole == intendedRole) {
                         Toast.makeText(this, "Login Successful", Toast.LENGTH_SHORT).show()
-                        goToMain(realRole)
+                        goToMain(realRole, fullName)
                     } else {
                         Toast.makeText(this, "Please log in as a $realRole", Toast.LENGTH_LONG).show()
                     }
@@ -57,9 +58,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun goToMain(role: String) {
+    private fun goToMain(role: String, name:String) {
         val intent = Intent(this, MainActivity::class.java)
         intent.putExtra("SELECTED_ROLE", role)
+        intent.putExtra("USER_FULLNAME", name)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()

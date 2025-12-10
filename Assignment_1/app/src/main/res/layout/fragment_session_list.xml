@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UpcomingSessionsFragment">
+    android:background="#F8F3FC">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/sessionsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"
-        tools:listitem="@layout/item_session_card"
-        />
+        android:padding="16dp"
+        android:clipToPadding="false"/>
+
+    <TextView
+        android:id="@+id/emptySessions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No sessions found."
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:visibility="gone"/>
 
 </FrameLayout>

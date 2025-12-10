@@ -15,15 +15,34 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/session_course_name"
-            android:layout_width="wrap_content"
+        <RelativeLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Advanced Mathematics"
-            android:textColor="#333333"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            />
+            android:layout_marginBottom="4dp">
+
+            <TextView
+                android:id="@+id/session_course_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/session_status"
+                android:text="Advanced Mathematics"
+                android:textColor="#333333"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/session_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="Pending"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#FFA726"
+                android:background="#1AFFA726"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/session_student_name"
@@ -32,8 +51,7 @@
             android:text="with Student Name"
             android:textColor="#555555"
             android:textSize="14sp"
-            android:layout_marginBottom="12dp"
-            />
+            android:layout_marginBottom="12dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -49,8 +67,7 @@
                 android:drawableStart="@drawable/calendar"
                 android:drawablePadding="8dp"
                 android:layout_marginEnd="16dp"
-                android:textColor="#555555"
-                />
+                android:textColor="#555555" />
 
             <TextView
                 android:id="@+id/session_time"
@@ -59,16 +76,15 @@
                 android:text="4:00 PM - 5:00 PM"
                 android:drawableStart="@drawable/time"
                 android:drawablePadding="8dp"
-                android:textColor="#555555"
-                />
+                android:textColor="#555555" />
         </LinearLayout>
 
         <Button
-            android:id="@+id/btn_contact_student"
+            android:id="@+id/btn_manage_session"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Contact Student"
-            android:backgroundTint="@color/primary_color"
+            android:text="Manage Session"
+            android:backgroundTint="#4b886a"
             android:textColor="@android:color/white"/>
 
     </LinearLayout>

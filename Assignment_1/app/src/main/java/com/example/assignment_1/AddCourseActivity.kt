@@ -1,18 +1,40 @@
 package com.example.assignment_1
 
+import android.app.Activity
+import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import com.google.android.material.textfield.TextInputEditText
 
 class AddCourseActivity : AppCompatActivity() {
 
     private lateinit var dbHelper: DatabaseHelper
     private var courseId: String? = null
+    private var currentImageBytes: ByteArray? = null
+    private lateinit var CourseImage: ImageView
+
+    private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val imageUri: Uri? = result.data?.data
+            if (imageUri != null) {
+                val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, imageUri)
+
+                CourseImage.setImageBitmap(bitmap)
+
+                currentImageBytes = ImageUtil.getBytesFromBitmap(bitmap)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,40 +42,62 @@ class AddCourseActivity : AppCompatActivity() {
 
         dbHelper = DatabaseHelper(this)
 
-        val Title = findViewById<EditText>(R.id.title)
-        val Desc = findViewById<EditText>(R.id.desc)
-        val Price = findViewById<EditText>(R.id.price)
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(R.drawable.back_arrow)
+        supportActionBar?.title = "Add Course"
+
+        // Find Views
+        CourseImage = findViewById(R.id.course_image)
+        val etTitle = findViewById<TextInputEditText>(R.id.title)
+        val etDesc = findViewById<TextInputEditText>(R.id.desc)
+        val etPrice = findViewById<TextInputEditText>(R.id.price)
         val btnSave = findViewById<Button>(R.id.saveButton)
         val btnDelete = findViewById<Button>(R.id.deleteButton)
-        val Header = findViewById<TextView>(R.id.header)
 
         if (intent.hasExtra("COURSE_ID")) {
             courseId = intent.getStringExtra("COURSE_ID")
-            Title.setText(intent.getStringExtra("COURSE_TITLE"))
-            Desc.setText(intent.getStringExtra("COURSE_DESC"))
-            Price.setText(intent.getDoubleExtra("COURSE_PRICE", 0.0).toString())
-
-            Header.text = "Edit Course"
+            supportActionBar?.title = "Edit Course"
             btnSave.text = "Update Course"
             btnDelete.visibility = View.VISIBLE
+
+            val course = dbHelper.getCourseById(courseId!!)
+            if (course != null) {
+                etTitle.setText(course.title)
+                etDesc.setText(course.description)
+                etPrice.setText(course.price.toString())
+
+                if (course.imageBitmap != null) {
+                    CourseImage.setImageBitmap(course.imageBitmap)
+                    currentImageBytes = ImageUtil.getBytesFromBitmap(course.imageBitmap)
+                }
+            }
+        } else {
+            val defaultBitmap = ImageUtil.drawableToBitmap(this, R.drawable.placeholder_img)
+            currentImageBytes = ImageUtil.getBytesFromBitmap(defaultBitmap)
+        }
+
+        CourseImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            pickImageLauncher.launch(intent)
         }
 
         btnSave.setOnClickListener {
-            val title = Title.text.toString()
-            val desc = Desc.text.toString()
-            val priceStr = Price.text.toString()
-            val defaultImage = ImageUtil.drawableToBitmap(this, R.drawable.placeholder_img)
+            val title = etTitle.text.toString()
+            val desc = etDesc.text.toString()
+            val priceStr = etPrice.text.toString()
 
-            val imageBytes = ImageUtil.getBytesFromBitmap(defaultImage)
+            val author = intent.getStringExtra("AUTHOR_NAME_PASSED") ?: "Unknown Tutor"
 
-            if (title.isNotEmpty() && priceStr.isNotEmpty()) {
-                val price = priceStr.toDouble()
+            if (title.isNotEmpty() && priceStr.isNotEmpty() && currentImageBytes != null) {
+                val price = priceStr.toDoubleOrNull() ?: 0.0
 
                 if (courseId == null) {
-                    dbHelper.insertCourse(title, desc, price, imageBytes)
+                    dbHelper.insertCourse(title, author, desc, price, currentImageBytes!!)
                     Toast.makeText(this, "Course Created", Toast.LENGTH_SHORT).show()
                 } else {
-                    dbHelper.updateCourse(courseId!!, title, desc, price, imageBytes)
+                    dbHelper.updateCourse(courseId!!, title, desc, price, currentImageBytes!!)
                     Toast.makeText(this, "Course Updated", Toast.LENGTH_SHORT).show()
                 }
                 finish()
@@ -69,5 +113,10 @@ class AddCourseActivity : AppCompatActivity() {
                 finish()
             }
         }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        finish()
+        return true
     }
 }

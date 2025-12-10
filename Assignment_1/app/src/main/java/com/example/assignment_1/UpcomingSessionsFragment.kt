@@ -4,30 +4,53 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class UpcomingSessionsFragment : Fragment() {
+class UpcomingSessionsFragment : Fragment(R.layout.fragment_session_list) {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.fragment_session_list, container, false)
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var empty: TextView
+    private lateinit var dbHelper: DatabaseHelper
 
-        val recyclerView: RecyclerView = view.findViewById(R.id.sessionsRecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val upcomingSessions = listOf(
-            Session("s1", "Dr. Johny", "Mathematics (Algebra)", "14 November 2025", "4:00 PM", "Confirmed", ""),
-            Session("s2", "Ms. Alice", "English (Grammar)", "15 November 2025", "10:00 AM", "Confirmed", ""),
-            Session("s3", "Mr. Bob", "Physics (Mechanics)", "16 November 2025", "2:30 PM", "Pending", "")
-        )
+        dbHelper = DatabaseHelper(requireContext())
+        recyclerView = view.findViewById(R.id.sessionsRecyclerView)
+        empty = view.findViewById(R.id.emptySessions)
+    }
 
-        val adapter = SessionAdapter(upcomingSessions, UserType.STUDENT)
-        recyclerView.adapter = adapter
+    override fun onResume() {
+        super.onResume()
+        loadSessions()
+    }
 
-        return view
+    private fun loadSessions() {
+        val userName = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Unknown"
+        val role = requireActivity().intent.getStringExtra("SELECTED_ROLE") ?: "Student"
+
+        val sessions = if (role == "Tutor") {
+            dbHelper.getTutorSessions(userName, isUpcoming = true)
+        } else {
+            dbHelper.getStudentSessions(userName, isUpcoming = true)
+        }
+
+        if (sessions.isEmpty()) {
+            recyclerView.visibility = View.GONE
+            empty.visibility = View.VISIBLE
+            empty.text = "No upcoming sessions."
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            empty.visibility = View.GONE
+
+            val userType = if (role == "Tutor") UserType.TUTOR else UserType.STUDENT
+
+            val adapter = SessionAdapter(sessions, userType)
+            recyclerView.layoutManager = LinearLayoutManager(context)
+            recyclerView.adapter = adapter
+        }
     }
 }

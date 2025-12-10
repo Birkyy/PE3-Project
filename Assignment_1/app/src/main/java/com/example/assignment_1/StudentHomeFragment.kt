@@ -49,8 +49,18 @@ class StudentHomeFragment : Fragment() {
 
     private fun setupCoursesRecyclerView() {
         val courses = dbHelper.getAllCourses()
-
         val adapter = CourseAdapter(courses)
+
+        adapter.onItemClick = { course ->
+            val intent = Intent(requireContext(), CourseDetailActivity::class.java)
+            intent.putExtra("COURSE_ID", course.id)
+
+            val studentName = requireActivity().intent.getStringExtra("USER_FULLNAME") ?: "Student"
+            intent.putExtra("STUDENT_NAME", studentName)
+
+            startActivity(intent)
+        }
+
         coursesRecyclerView.layoutManager = LinearLayoutManager(context)
         coursesRecyclerView.adapter = adapter
     }
