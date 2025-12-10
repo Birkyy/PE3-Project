@@ -142,13 +142,13 @@ class TutorFragment : Fragment(R.layout.fragment_tutor) {
         builder.setPositiveButton("Confirm") { dialog, _ ->
             dbHelper.updateSessionStatus(session.id, "Confirmed")
             Toast.makeText(context, "Session Confirmed!", Toast.LENGTH_SHORT).show()
-            setupTutorSessionsRecyclerView() // Refresh list
+            setupTutorSessionsRecyclerView()
         }
 
         builder.setNegativeButton("Reject") { dialog, _ ->
             dbHelper.updateSessionStatus(session.id, "Cancelled")
             Toast.makeText(context, "Session Rejected.", Toast.LENGTH_SHORT).show()
-            setupTutorSessionsRecyclerView() // Refresh list
+            setupTutorSessionsRecyclerView()
         }
 
         builder.setNeutralButton("Back", null)

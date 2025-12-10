@@ -82,7 +82,7 @@ class CourseDetailActivity : AppCompatActivity() {
             showTimePicker(date)
         }, year, month, day)
 
-        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000 // Disable past dates
+        datePicker.datePicker.minDate = System.currentTimeMillis() - 1000
         datePicker.show()
     }
 

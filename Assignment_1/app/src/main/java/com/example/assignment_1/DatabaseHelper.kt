@@ -113,6 +113,31 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         return exists
     }
 
+    fun getAllUsers(): List<User> {
+        val userList = mutableListOf<User>()
+        val db = readableDatabase
+
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_USERS", null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID)).toString()
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FULLNAME))
+                val username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME))
+                val role = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ROLE))
+
+                userList.add(User(id, name, username, role))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return userList
+    }
+
+    fun deleteUser(id: String): Int {
+        val db = writableDatabase
+        return db.delete(TABLE_USERS, "$COLUMN_USER_ID = ?", arrayOf(id))
+    }
+
     fun insertCourse(title: String, author: String, desc: String, price: Double, imageBytes: ByteArray): Long {
         val db = writableDatabase
         val values = ContentValues().apply {
@@ -216,7 +241,6 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
 
         var fullName = "Unknown Tutor"
         if (cursor.moveToFirst()) {
-            // We use the constant we defined earlier
             val index = cursor.getColumnIndex(COLUMN_FULLNAME)
             if (index != -1) {
                 fullName = cursor.getString(index)
@@ -339,7 +363,6 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         var totalEarnings = 0.0
         val db = readableDatabase
 
-        // 1. Select ONLY 'Confirmed' sessions for this tutor
         val cursor = db.rawQuery(
             "SELECT * FROM $TABLE_SESSIONS WHERE $COLUMN_SESSION_TUTOR = ? AND $COLUMN_SESSION_STATUS = 'Confirmed'",
             arrayOf(tutorName)

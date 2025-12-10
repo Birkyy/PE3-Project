@@ -48,15 +48,15 @@ class SessionAdapter(
 
         when(session.status) {
             "Confirmed" -> {
-                holder.status.setTextColor(Color.parseColor("#4CAF50")) // Green
+                holder.status.setTextColor(Color.parseColor("#4CAF50"))
                 holder.status.setBackgroundColor(Color.parseColor("#1A4CAF50"))
             }
             "Cancelled" -> {
-                holder.status.setTextColor(Color.parseColor("#F44336")) // Red
+                holder.status.setTextColor(Color.parseColor("#F44336"))
                 holder.status.setBackgroundColor(Color.parseColor("#1AF44336"))
             }
             else -> {
-                holder.status.setTextColor(Color.parseColor("#FFA726")) // Orange
+                holder.status.setTextColor(Color.parseColor("#FFA726"))
                 holder.status.setBackgroundColor(Color.parseColor("#1AFFA726"))
             }
         }

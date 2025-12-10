@@ -48,7 +48,6 @@ class AddCourseActivity : AppCompatActivity() {
         supportActionBar?.setHomeAsUpIndicator(R.drawable.back_arrow)
         supportActionBar?.title = "Add Course"
 
-        // Find Views
         CourseImage = findViewById(R.id.course_image)
         val etTitle = findViewById<TextInputEditText>(R.id.title)
         val etDesc = findViewById<TextInputEditText>(R.id.desc)
